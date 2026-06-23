@@ -1132,7 +1132,12 @@ export function chooseRole(game, roleId) {
     );
 }
 
-/** Return the offered role definitions in audition order. */
+/**
+ * Return the offered role definitions in audition order.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {RoleDefinition[]} Offered roles, or an empty list outside auditions.
+ */
 export function getAuditionCandidates(game) {
     if (game.phase !== "audition") {
         return [];
@@ -1167,7 +1172,12 @@ const roleStatus = function (game, roleId, slot) {
         : "RETAKE AVAILABLE";
 };
 
-/** Return display-ready views of the current cast without exposing UI rules. */
+/**
+ * Return display-ready views of the current cast without exposing UI rules.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {RoleView[]} Recruited roles in left-to-right stage order.
+ */
 export function getCastRoleViews(game) {
     return game.castSlots.map(function (id, slot) {
         return {
@@ -1179,7 +1189,12 @@ export function getCastRoleViews(game) {
     });
 }
 
-/** Return cards the player may currently toggle. */
+/**
+ * Return cards the player may currently toggle.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {string[]} Selectable card identifiers.
+ */
 export function getSelectableCardIds(game) {
     if (game.phase !== "playing") {
         return [];
@@ -1189,7 +1204,13 @@ export function getSelectableCardIds(game) {
         : game.hand.map((card) => card.id);
 }
 
-/** Return legal stage directions for one recruited role. */
+/**
+ * Return legal stage directions for one recruited role.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @param {string} roleId Recruited role identifier.
+ * @returns {MoveDirection[]} Directions that keep the role within the cast.
+ */
 export function getMovableDirections(game, roleId) {
     if (game.phase !== "playing") {
         return [];
@@ -1204,7 +1225,14 @@ export function getMovableDirections(game, roleId) {
     ];
 }
 
-/** Swap a recruited role with an adjacent stage slot. */
+/**
+ * Swap a recruited role with an adjacent stage slot.
+ * @memberof LastCurtain
+ * @param {GameState} game Playing game state.
+ * @param {string} roleId Recruited role identifier.
+ * @param {MoveDirection} direction Adjacent direction to move.
+ * @returns {GameState} Reordered game or player-facing error state.
+ */
 export function moveRole(game, roleId, direction) {
     if (game.phase !== "playing") {
         return withError(game, "WRONG_PHASE");
@@ -1226,7 +1254,13 @@ export function moveRole(game, roleId, direction) {
     return {...game, castSlots, lastError: null};
 }
 
-/** Toggle one card in the proposed scene, up to five selected cards. */
+/**
+ * Toggle one card in the proposed scene, up to five selected cards.
+ * @memberof LastCurtain
+ * @param {GameState} game Playing game state.
+ * @param {string} cardId Card identifier from the current hand.
+ * @returns {GameState} Updated selection or player-facing error state.
+ */
 export function toggleCardSelection(game, cardId) {
     if (game.phase !== "playing") {
         return withError(game, "WRONG_PHASE");
@@ -1251,12 +1285,22 @@ export function toggleCardSelection(game, cardId) {
     };
 }
 
-/** Return a deterministic scene preview without committing it. */
+/**
+ * Return a deterministic scene preview without committing it.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {SceneResolution} Projected score, effects, and validation result.
+ */
 export function previewScene(game) {
     return resolveScene(game).resolution;
 }
 
-/** Commit the selected cards as a scene, possibly opening a retake decision. */
+/**
+ * Commit the selected cards as a scene, possibly opening a retake decision.
+ * @memberof LastCurtain
+ * @param {GameState} game Playing game state with selected cards.
+ * @returns {GameState} Committed scene, pending decision, or error state.
+ */
 export function performScene(game) {
     const result = resolveScene(game);
     if (!result.resolution.valid || !result.commit) {
@@ -1274,7 +1318,12 @@ export function performScene(game) {
     );
 }
 
-/** Keep a pending performed scene and advance the lifecycle. */
+/**
+ * Keep a pending performed scene and advance the lifecycle.
+ * @memberof LastCurtain
+ * @param {GameState} game Pending-scene game state.
+ * @returns {GameState} Next scene, act result, or player-facing error state.
+ */
 export function confirmScene(game) {
     if (game.phase !== "scene-pending") {
         return withError(game, "WRONG_PHASE");
@@ -1282,7 +1331,12 @@ export function confirmScene(game) {
     return advance({...game, pendingScene: null, lastError: null});
 }
 
-/** Restore the state before a pending scene and ban its final hand. */
+/**
+ * Restore the state before a pending scene and ban its final hand.
+ * @memberof LastCurtain
+ * @param {GameState} game Pending-scene game state.
+ * @returns {GameState} Restored playing state or player-facing error state.
+ */
 export function rewindScene(game) {
     if (game.phase !== "scene-pending") {
         return withError(game, "WRONG_PHASE");
@@ -1306,7 +1360,12 @@ export function rewindScene(game) {
     };
 }
 
-/** Replace the selected cards without allowing them to be drawn immediately. */
+/**
+ * Replace selected cards without allowing them to be drawn immediately.
+ * @memberof LastCurtain
+ * @param {GameState} game Playing game state with selected cards.
+ * @returns {GameState} Refilled hand or player-facing error state.
+ */
 export function rehearse(game) {
     if (game.phase !== "playing") {
         return withError(game, "WRONG_PHASE");
@@ -1345,7 +1404,12 @@ export function rehearse(game) {
     };
 }
 
-/** Move from a completed act to its intermission audition. */
+/**
+ * Move from a completed act to its intermission audition.
+ * @memberof LastCurtain
+ * @param {GameState} game Completed-act game state.
+ * @returns {GameState} Intermission audition or player-facing error state.
+ */
 export function continueAfterAct(game) {
     if (game.phase !== "act-complete") {
         return withError(game, "WRONG_PHASE");
@@ -1359,22 +1423,43 @@ export function continueAfterAct(game) {
     };
 }
 
-/** Fully recreate a title-state game, preserving the original seed by default. */
+/**
+ * Fully recreate a title-state game, preserving the original seed by default.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @param {number|string} [seed=game.initialSeed] Seed for the replacement run.
+ * @returns {GameState} Fresh reproducible title-state game.
+ */
 export function restartGame(game, seed = game.initialSeed) {
     return createGame(seed);
 }
 
-/** Return the current lifecycle phase. */
+/**
+ * Return the current lifecycle phase.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {Phase} Current lifecycle phase.
+ */
 export function getPhase(game) {
     return game.phase;
 }
 
-/** Return the applause target derived from the current act. */
+/**
+ * Return the applause target derived from the current act.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {number} Applause required to pass the current act.
+ */
 export function getActTarget(game) {
     return ACT_TARGETS[game.currentAct - 1];
 }
 
-/** Return phase and state-aware action identifiers for the UI. */
+/**
+ * Return phase and state-aware action identifiers for the UI.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {string[]} Currently legal UI action identifiers.
+ */
 export function getAvailableActions(game) {
     if (game.phase === "title") {
         return ["start"];
@@ -1411,7 +1496,12 @@ export function getAvailableActions(game) {
     return ["restart"];
 }
 
-/** Return whether the run has reached victory or defeat. */
+/**
+ * Return whether the run has reached victory or defeat.
+ * @memberof LastCurtain
+ * @param {GameState} game Current game state.
+ * @returns {boolean} Whether the run is won or lost.
+ */
 export function isGameOver(game) {
     return game.phase === "won" || game.phase === "lost";
 }

@@ -27,6 +27,12 @@ npm run check  # tests, lint, and documentation
 npm run simulate
 ```
 
+`npm run check` is the authoritative quality gate. It runs the Mocha domain
+tests, ESLint 10.5.0 using the flat configuration in `eslint.config.js`, and
+JSDoc generation. The project uses ESLint because its ES-module and modern
+JavaScript support matches the implemented source; historical JSLint template
+comments are not part of the active toolchain.
+
 ## Rules
 
 - Each act begins with eight cards, five performances, and three rehearsals.

@@ -1,4 +1,3 @@
-/*jslint browser */
 import Game from "./Module.js";
 
 const element = (id) => document.getElementById(id);
