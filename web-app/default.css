@@ -13,6 +13,12 @@
     --success: #79b69b;
     --line: rgba(205, 168, 95, 0.28);
     --panel: rgba(9, 11, 22, 0.84);
+    --surface-primary: #12121e;
+    --surface-secondary: rgba(15, 15, 26, 0.88);
+    --surface-tertiary: transparent;
+    --border-primary: rgba(221, 180, 91, 0.55);
+    --border-secondary: rgba(221, 180, 91, 0.25);
+    --border-tertiary: rgba(255, 255, 255, 0.08);
     --shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: var(--night);
@@ -200,16 +206,33 @@ button:disabled {
 
 .side-panel,
 .centre-stage {
-    border: 1px solid var(--line);
     border-radius: 8px;
+}
+
+/* Secondary surface + strongest elevation: the centre stage is the core. */
+.centre-stage {
+    border: 1px solid var(--border-secondary);
     box-shadow: var(--shadow);
-    background: var(--panel);
+    background: var(--surface-secondary);
     backdrop-filter: blur(18px);
 }
 
 .side-panel {
     min-width: 0;
     padding: 18px;
+}
+
+/* Tertiary surface: the event log recedes into ambient side notes. */
+.log-panel {
+    border: 1px solid var(--border-tertiary);
+    background: var(--surface-tertiary);
+}
+
+/* Secondary surface, no elevation: act status sits below the stage. */
+.status-panel {
+    border: 1px solid var(--border-secondary);
+    background: var(--surface-secondary);
+    backdrop-filter: blur(14px);
 }
 
 .panel-heading {
@@ -220,8 +243,13 @@ button:disabled {
     border-bottom: 1px solid var(--line);
 }
 
+/* Tertiary log heading is the quietest divider in the layout. */
+.log-panel .panel-heading {
+    border-bottom-color: var(--border-tertiary);
+}
+
 .panel-heading h2 {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
 }
 
 .panel-index {
@@ -531,9 +559,13 @@ button:disabled {
     font-size: 0.9rem;
 }
 
+/* Primary surface: where the player actually acts. Brightest + gold edge. */
 .hand-section {
     min-height: 225px;
     overflow: hidden;
+    border-bottom: 0;
+    border-top: 1px solid var(--border-primary);
+    background: var(--surface-primary);
 }
 
 .selection-count {
@@ -656,6 +688,7 @@ body[data-phase="scene-pending"] .hand-section {
     grid-template-columns: 1.25fr 0.75fr;
     gap: 10px;
     padding: 14px clamp(16px, 2vw, 28px);
+    background: var(--surface-primary);
 }
 
 .controls button,
