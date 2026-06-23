@@ -107,3 +107,34 @@ The seven WebP assets total well below the 2.5MB project budget, and the page fa
 ## Balance status
 
 The calibrated act targets are 400, 500, and 600 applause, with three rehearsals per act. `npm run simulate` evaluates deterministic baseline, first-offer, random-offer, and heuristic policies. In the latest 2,000-seed calibration run, the heuristic policy passed Acts I/II/III at 99.9%, 95.2%, and 76.5% conditionally, with a 72.8% full-run win rate (random-offer 57.4%, first-offer 57.8%, baseline 21.5%). These targets should be changed only alongside the score constants, simulator output, tests, and this README.
+
+## References
+
+Algorithms and libraries used in this project. All game design, rules, scoring,
+and artwork are original to this submission.
+
+- **Linear congruential generator** — the deterministic random source in
+  `Module.js` uses the multiplier `1664525` and increment `1013904223` from
+  W. H. Press et al., *Numerical Recipes* (LCG parameters for a 32-bit state).
+- **FNV-1a hash** — string seeds are folded to a 32-bit state with the
+  Fowler–Noll–Vo (FNV-1a) constants `2166136261` and `16777619`.
+- **Fisher–Yates shuffle** — deck and audition-queue ordering use the
+  Fisher–Yates (Knuth) shuffle driven by the seeded generator.
+- **Poker hand rankings** — standard five-card poker hand hierarchy.
+- **[Ramda](https://ramdajs.com/)** — functional utility library used in the
+  game module.
+- **Tooling** — [Mocha](https://mochajs.org/) (tests),
+  [JSDoc](https://jsdoc.app/) (documentation),
+  [ESLint](https://eslint.org/) (linting), and
+  [http-server](https://www.npmjs.com/package/http-server) (local serving).
+
+## Declaration of AI use
+
+
+The concept, game rules, scoring system, role design, unit-test design, and
+artwork of this project are my own original ideas. I used an AI assistant
+only as a supporting tool for discussing and reviewing
+the design and implementation plan and reviewing the rules and scoring logic. Every change was reviewed,
+tested, and verified by me with `npm run check` and an automated accessibility
+audit. The design decisions and the final submitted code are my own
+responsibility.
