@@ -2,15 +2,26 @@
   "name": "computing-2-submission",
   "type": "module",
   "version": "1.0.0",
-  "description": "",
+  "description": "The Last Curtain: Theatre of Echoes — a deterministic turn-based card game.",
   "main": "web-app/Module.js",
-  "author": "",
+  "author": "James Xu",
   "license": "ISC",
+  "scripts": {
+    "start": "http-server . -c-1 -p 8080",
+    "test": "mocha \"web-app/tests/**/*.test.js\"",
+    "docs": "jsdoc -c jsdoc.json",
+    "lint": "eslint \"web-app/**/*.js\" \"web-app/**/*.mjs\"",
+    "simulate": "node web-app/dev/simulate.mjs",
+    "check": "npm run test && npm run lint && npm run docs"
+  },
   "dependencies": {
-    "ramda": "^0.32.0"
+    "ramda": "0.32.0"
   },
   "devDependencies": {
-    "docdash": "^2.0.2",
-    "mocha": "^11.7.5"
+    "docdash": "2.0.2",
+    "http-server": "14.1.1",
+    "jsdoc": "4.0.4",
+    "eslint": "10.5.0",
+    "mocha": "11.7.5"
   }
 }

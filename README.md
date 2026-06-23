@@ -1,53 +1,100 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/H6lPFq0J)
-# Computing 2 Coursework Submission.
-**CID**: 02607578
+# The Last Curtain: Theatre of Echoes
 
-This is the submission template for your Computing 2 Applications coursework submission.
+**CID:** 02607578
 
-## Checklist
-### Install dependencies locally
-This template relies on a a few packages from the Node Package Manager, npm.
-To install them run the following commands in the terminal.
-```properties
+The Last Curtain is a deterministic, turn-based card game set in an original ritual theatre. Each poker hand becomes a scene in a five-scene act. The theatre remembers the previous scene: changing hand types builds Variety, while repetition removes the hand's base applause.
+
+The project was designed for the Computing 2: Applications coursework. Its game rules are implemented as a browser-independent pure JavaScript module, tested with Mocha, and consumed by a semantic HTML/CSS/JavaScript interface.
+
+## Run the game
+
+Requires Node.js 18 or newer.
+
+```sh
 npm install
+npm start
 ```
-These won't be uploaded to your repository because of the `.gitignore`.
-I'll run the same commands when I download your repos.
 
-### Game Module – API
-*You will produce an API specification, i.e. a list of function names and their signatures, for a Javascript module that represents the state of your game and the operations you can perform on it that advances the game or provides information.*
+Open <http://127.0.0.1:8080/web-app/>.
 
-- [ ] Include a `.js ` module file in `/web-app` containing the API using `jsdoc`.
-- [ ] Update `/jsdoc.json` to point to this module in `.source.include` (line 7)
-- [ ] Compile jsdoc using the run configuration `Generate Docs`
-- [ ] Check the generated docs have compiled correctly.
+Useful commands:
 
-### Game Module – Implementation
-*You will implement, in Javascript, the module you specified above. Such that your game can be simulated in code, e.g. in the debug console.*
+```sh
+npm test       # domain tests
+npm run docs   # generate JSDoc in /docs
+npm run lint   # modern JavaScript source-quality check
+npm run check  # tests, lint, and documentation
+npm run simulate
+```
 
-- [ ] The file above should be fully implemented.
+## Rules
 
-### Unit Tests – Specification
-*For the Game module API you have produced, write a set of unit tests descriptions that specify the expected behaviour of one aspect of your API, e.g. you might pick the win condition, or how the state changes when a move is made.*
+- Each act begins with eight cards, five performances, and two rehearsals.
+- Select one to five cards and perform the best available poker hand.
+- A different hand type raises Variety, up to Level 3; repetition resets Variety and removes base applause.
+- Rehearsal replaces selected cards without consuming a scene.
+- Reach the applause target after the fifth scene to continue.
+- Before every act, invite one of three roles to the stage.
+- Complete all three acts to win.
 
-- [ ] Write unit test definitions in `/web-app/tests`.
-- [ ] Check the headings appear in the Testing sidebar.
+### Cast roles
 
-### Unit Tests – Implementation
-*Implement in code the unit tests specified above.*
+- **The Last Entrant** stores half of the first two scenes and releases twice the stored applause at the finale.
+- **The Faceless Understudy** absorbs one repeated hand before requiring a different hand type to recover.
+- **The Veiled Witnesses** record new hand types and restore a rehearsal after every third discovery.
+- **The Twin Mask** flips during rehearsal; five cards of the active colour may share a virtual suit.
+- **The Curtain Director** watches the role immediately to the left; two cues restore a rehearsal.
+- **The Marionette of Retakes** rewinds one scene per act but bans its final hand type.
 
-- [ ] Implement the tests above.
+## Architecture
 
-### Web Application
-*Produce a web application that allows a user to interface with your game module.*
+```text
+web-app/Module.js          pure game API and JSDoc
+web-app/main.js            events and rendering only
+web-app/index.html         semantic page structure
+web-app/default.css        responsive visual system
+web-app/tests/             domain and API behaviour tests
+web-app/dev/simulate.mjs   deterministic balance simulator
+web-app/assets/            original local WebP artwork
+```
 
-- Implement in `/web-app`
-  - [ ] `index.html`
-  - [ ] `default.css`
-  - [ ] `main.js`
-  - [ ] Any other files you need to include.
+`Module.js` owns all game state, phase transitions, scoring, card evaluation, role effects, action availability, and seeded random behaviour. `main.js` does not calculate game rules; it calls the public API and renders the returned state.
 
-### Finally
-- [ ] Push to GitHub.
-- [ ] Sync the changes.
-- [ ] Check submission on GitHub website.
+The random generator is an explicit 32-bit LCG. A seed produces the same audition queue, deck order, and full sequence of state transitions. Previewing a scene never advances the random state.
+
+## Testing scope
+
+The automated suite covers:
+
+- all nine poker hands using selections of one to five cards;
+- ace-high and ace-low straights;
+- frozen PRNG golden values;
+- the complete title, audition, playing, pending, intermission, win, and loss lifecycle;
+- repetition and Variety scoring;
+- all six roles and their interaction order;
+- audition queue rotation;
+- discard recycling without immediately redrawing removed cards;
+- Marionette snapshots and final-hand bans;
+- wrong-phase and player-facing API errors;
+- deep immutability and preview side-effect checks.
+
+## Accessibility
+
+- Every playing card and action is a native button.
+- Selected cards use `aria-pressed`.
+- Focus is deliberately transferred at auditions, retake decisions, act transitions, and results.
+- Keyboard shortcuts support performing, rehearsing, keeping, rewinding, and arranging roles.
+- Suit information is communicated by symbol, name, and colour.
+- Status changes use a concise live region; errors use an alert region.
+- All animation respects `prefers-reduced-motion`.
+- The interface remains playable from 360px mobile layouts to wide desktop screens.
+
+## Original visual direction
+
+All artwork was created specifically for this project. It uses general theatrical and mysterious motifs—velvet curtains, masks, fog, cue threads, and stage lighting—without characters, names, marks, or visual assets from existing fictional properties. Character images are decorative; their names, rules, and live status are provided as HTML text.
+
+The seven WebP assets total well below the 2.5MB project budget, and the page falls back to CSS gradients if the theatre background cannot load.
+
+## Balance status
+
+The calibrated act targets are 500, 570, and 640 applause. `npm run simulate` evaluates deterministic baseline, first-offer, random-offer, and heuristic policies. In the final 2,000-seed calibration run, the heuristic policy passed Acts I/II/III at 90.1%, 74.3%, and 63.6% conditionally, with a 42.6% full-run win rate. These targets should be changed only alongside the score constants, simulator output, tests, and this README.

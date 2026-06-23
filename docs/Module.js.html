@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Module.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="LastCurtain.html">LastCurtain</a><ul class='methods'><li data-type='method'><a href="LastCurtain.html#.exports.chooseRole">exports.chooseRole</a></li><li data-type='method'><a href="LastCurtain.html#.exports.classifyNaturalHand">exports.classifyNaturalHand</a></li><li data-type='method'><a href="LastCurtain.html#.exports.createDeck">exports.createDeck</a></li><li data-type='method'><a href="LastCurtain.html#.exports.createGame">exports.createGame</a></li><li data-type='method'><a href="LastCurtain.html#.exports.shuffleWithSeed">exports.shuffleWithSeed</a></li><li data-type='method'><a href="LastCurtain.html#.exports.startGame">exports.startGame</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#BeforeAfter">BeforeAfter</a></li><li><a href="global.html#Card">Card</a></li><li><a href="global.html#CardColor">CardColor</a></li><li><a href="global.html#EffectLogEntry">EffectLogEntry</a></li><li><a href="global.html#Evaluation">Evaluation</a></li><li><a href="global.html#GameError">GameError</a></li><li><a href="global.html#GameState">GameState</a></li><li><a href="global.html#HandType">HandType</a></li><li><a href="global.html#MoveDirection">MoveDirection</a></li><li><a href="global.html#NumericResourceChange">NumericResourceChange</a></li><li><a href="global.html#PendingScene">PendingScene</a></li><li><a href="global.html#Phase">Phase</a></li><li><a href="global.html#Rank">Rank</a></li><li><a href="global.html#ResourceChanges">ResourceChanges</a></li><li><a href="global.html#RewindSnapshot">RewindSnapshot</a></li><li><a href="global.html#RoleDefinition">RoleDefinition</a></li><li><a href="global.html#RoleState">RoleState</a></li><li><a href="global.html#RoleView">RoleView</a></li><li><a href="global.html#SceneCalculation">SceneCalculation</a></li><li><a href="global.html#SceneCommit">SceneCommit</a></li><li><a href="global.html#SceneResolution">SceneResolution</a></li><li><a href="global.html#ScoreItem">ScoreItem</a></li><li><a href="global.html#Suit">Suit</a></li><li><a href="global.html#TimelineEntry">TimelineEntry</a></li><li><a href="global.html#TwinMaskState">TwinMaskState</a></li><li><a href="global.html#confirmScene">confirmScene</a></li><li><a href="global.html#continueAfterAct">continueAfterAct</a></li><li><a href="global.html#getActTarget">getActTarget</a></li><li><a href="global.html#getAuditionCandidates">getAuditionCandidates</a></li><li><a href="global.html#getAvailableActions">getAvailableActions</a></li><li><a href="global.html#getCastRoleViews">getCastRoleViews</a></li><li><a href="global.html#getMovableDirections">getMovableDirections</a></li><li><a href="global.html#getPhase">getPhase</a></li><li><a href="global.html#getSelectableCardIds">getSelectableCardIds</a></li><li><a href="global.html#isGameOver">isGameOver</a></li><li><a href="global.html#moveRole">moveRole</a></li><li><a href="global.html#performScene">performScene</a></li><li><a href="global.html#previewScene">previewScene</a></li><li><a href="global.html#rehearse">rehearse</a></li><li><a href="global.html#resolveScene">resolveScene</a></li><li><a href="global.html#restartGame">restartGame</a></li><li><a href="global.html#rewindScene">rewindScene</a></li><li><a href="global.html#toggleCardSelection">toggleCardSelection</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Module.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import R from "./ramda.js";
+
+/**
+ * Pure domain model for The Last Curtain: Theatre of Echoes.
+ * Every public state transition returns a new game state and never accesses
+ * the browser DOM or a non-deterministic random source.
+ * @namespace LastCurtain
+ * @author James Xu
+ * @version 1.0.1
+ */
+
+/** @typedef {1|2|3|4|5|6|7|8|9|10|11|12|13} Rank */
+/** @typedef {"S"|"H"|"D"|"C"} Suit */
+/** @typedef {"red"|"black"} CardColor */
+/** @typedef {"HighCard"|"Pair"|"TwoPair"|"ThreeOfAKind"|"Straight"|"Flush"|"FullHouse"|"FourOfAKind"|"StraightFlush"} HandType */
+/** @typedef {"title"|"audition"|"playing"|"scene-pending"|"act-complete"|"won"|"lost"} Phase */
+/** @typedef {"left"|"right"} MoveDirection */
+
+/**
+ * @typedef {Object} Card
+ * @property {string} id Unique card identifier.
+ * @property {Suit} suit Printed suit.
+ * @property {Rank} rank Printed rank, where one is an ace.
+ * @property {CardColor} color Printed colour.
+ * @property {number} value Applause value.
+ */
+
+/**
+ * @typedef {Object} Evaluation
+ * @property {HandType} type Best recognised poker hand.
+ * @property {string[]} contributingCardIds Cards forming that hand.
+ * @property {string[]} kickerCardIds Selected cards outside that hand.
+ * @property {number} priority Relative poker-hand priority.
+ * @property {string|null} modifiedByRoleId Role responsible for an upgrade.
+ * @property {string|null} modificationLabel Human-readable upgrade label.
+ */
+
+/**
+ * @typedef {Object} ScoreItem
+ * @property {string} id Stable breakdown identifier.
+ * @property {string} label Human-readable English label.
+ * @property {number} amount Applause added or removed.
+ */
+
+/**
+ * @typedef {Object} NumericResourceChange
+ * @property {number} before Resource before the scene.
+ * @property {number} attemptedDelta Requested increase.
+ * @property {number} appliedDelta Applied increase.
+ * @property {number} after Resource after the scene.
+ * @property {number} lostToCapacity Increase lost at the cap.
+ */
+
+/**
+ * @typedef {Object} BeforeAfter
+ * @property {number} before Previous value.
+ * @property {number} after New value.
+ */
+
+/**
+ * @typedef {Object} ResourceChanges
+ * @property {NumericResourceChange} rehearsals Rehearsal changes.
+ * @property {BeforeAfter} delayedApplause Last Entrant storage.
+ * @property {BeforeAfter} directorCueTokens Director cue storage.
+ * @property {HandType[]} witnessedHandTypesAdded Newly witnessed hands.
+ */
+
+/**
+ * @typedef {Object} EffectLogEntry
+ * @property {string} roleId Triggering role.
+ * @property {string} message Human-readable effect summary.
+ */
+
+/**
+ * @typedef {Object} TimelineEntry
+ * @property {number} scene One-based scene number.
+ * @property {HandType} natural Natural poker hand.
+ * @property {HandType} final Final hand after role modifications.
+ * @property {string|null} modifier Modification label.
+ * @property {ScoreItem[]} scoreItems Score breakdown.
+ * @property {number} totalScore Applause awarded.
+ * @property {string[]} triggeredRoleIds Triggered passive roles.
+ * @property {EffectLogEntry[]} effectLog Effect summaries.
+ */
+
+/**
+ * @typedef {Object} SceneResolution
+ * @property {boolean} valid Whether the selected scene is legal.
+ * @property {string|null} errorCode Stable error identifier.
+ * @property {string|null} errorMessage Human-readable error.
+ * @property {Evaluation|null} naturalEvaluation Natural hand.
+ * @property {Evaluation|null} finalEvaluation Modified hand.
+ * @property {ScoreItem[]} scoreItems Score breakdown.
+ * @property {number} totalScore Projected applause.
+ * @property {number} varietyBefore Variety before this scene.
+ * @property {number} varietyAfter Variety after this scene.
+ * @property {boolean} repeated Whether repetition removed base applause.
+ * @property {string[]} triggeredRoleIds Triggered roles.
+ * @property {EffectLogEntry[]} effectLog Effect summaries.
+ * @property {ResourceChanges} resourceChanges Resource deltas.
+ * @property {TimelineEntry|null} timelineEntry Constructed timeline entry.
+ */
+
+/**
+ * @typedef {Object} TwinMaskState
+ * @property {"comedy"|"tragedy"} face Current face.
+ */
+
+/**
+ * @typedef {Object} RoleState
+ * @property {{delayedApplause:number}} lastEntrant Last Entrant state.
+ * @property {{ready:boolean}} faceless Faceless state.
+ * @property {TwinMaskState} twinMask Twin Mask state.
+ * @property {{cueTokens:number}} curtainDirector Director state.
+ * @property {{rewindUsed:boolean}} marionette Marionette state.
+ */
+
+/**
+ * @typedef {Object} SceneCalculation
+ * @property {SceneResolution} resolution Calculated resolution.
+ * @property {SceneCommit|null} commit Commit for a legal scene.
+ */
+
+/**
+ * @typedef {Object} SceneCommit
+ * @property {number} actScoreDelta Act applause delta.
+ * @property {number} runScoreDelta Run applause delta.
+ * @property {HandType} previousHandType New remembered hand.
+ * @property {number} varietyLevel New variety level.
+ * @property {number} rehearsals New rehearsal count.
+ * @property {HandType[]} witnessedHandTypes New witnessed collection.
+ * @property {RoleState} roleState New role state.
+ * @property {TimelineEntry} timelineEntry Timeline entry to append.
+ */
+
+/**
+ * @typedef {Object} GameError
+ * @property {string} code Stable error code.
+ * @property {string} message Human-readable error.
+ */
+
+/**
+ * @typedef {Object} RewindSnapshot
+ * @property {number} rngState Random state.
+ * @property {number} actScore Act score.
+ * @property {number} runScore Run score.
+ * @property {number} sceneNumber Scene number.
+ * @property {number} rehearsals Rehearsals.
+ * @property {number} varietyLevel Variety level.
+ * @property {HandType|null} previousHandType Remembered hand.
+ * @property {TimelineEntry[]} timeline Timeline.
+ * @property {HandType[]} bannedHandTypes Banned hands.
+ * @property {SceneResolution|null} lastSceneResult Previous result.
+ * @property {HandType[]} witnessedHandTypes Witness collection.
+ * @property {Card[]} drawPile Draw pile.
+ * @property {Card[]} hand Hand.
+ * @property {Card[]} discardPile Discard pile.
+ * @property {string[]} selectedCardIds Selected cards.
+ * @property {RoleState} roleState Role state.
+ * @property {GameError|null} lastError Previous error.
+ */
+
+/**
+ * @typedef {Object} PendingScene
+ * @property {RewindSnapshot} snapshotBefore State before performance.
+ * @property {SceneResolution} resolution Candidate result.
+ */
+
+/**
+ * @typedef {Object} RoleDefinition
+ * @property {string} id Stable identifier.
+ * @property {string} name Display name.
+ * @property {string} description Domain description.
+ * @property {string} image Local illustration path.
+ */
+
+/**
+ * @typedef {Object} RoleView
+ * @property {string} id Stable identifier.
+ * @property {string} name Display name.
+ * @property {string} description Domain description.
+ * @property {string} image Local illustration path.
+ * @property {number} slot Zero-based stage slot.
+ * @property {string} status Current status label.
+ * @property {boolean} dormant Whether the role is dormant.
+ */
+
+/**
+ * @typedef {Object} GameState
+ * @property {number|string} initialSeed Original reproducible seed.
+ * @property {number} rngState Current deterministic random state.
+ * @property {Phase} phase Current lifecycle phase.
+ * @property {"opening"|"post-1"|"post-2"|null} auditionType Audition kind.
+ * @property {string[]} offeredRoleIds Current audition offers.
+ * @property {string[]} auditionQueue Unrecruited role queue.
+ * @property {string[]} castSlots Recruited roles from left to right.
+ * @property {1|2|3} currentAct Current act.
+ * @property {number} actScore Current-act applause.
+ * @property {number} runScore Whole-run applause.
+ * @property {number} sceneNumber Current one-based scene.
+ * @property {number} rehearsals Rehearsals remaining.
+ * @property {number} varietyLevel Current variety level.
+ * @property {HandType|null} previousHandType Last final hand.
+ * @property {TimelineEntry[]} timeline Current act timeline.
+ * @property {HandType[]} bannedHandTypes Hands banned by rewind.
+ * @property {PendingScene|null} pendingScene Pending rewind decision.
+ * @property {SceneResolution|null} lastSceneResult Last committed result.
+ * @property {HandType[]} witnessedHandTypes Witnessed hands.
+ * @property {Card[]} drawPile Draw pile.
+ * @property {Card[]} hand Current hand.
+ * @property {Card[]} discardPile Previous discards.
+ * @property {string[]} selectedCardIds Selected cards.
+ * @property {RoleState} roleState Role state.
+ * @property {GameError|null} lastError Last player-facing error.
+ */
+
+const SUITS = Object.freeze(["S", "H", "D", "C"]);
+const RANKS = Object.freeze(R.range(1, 14));
+const INITIAL_ROLE_ORDER = Object.freeze([
+    "lastEntrant",
+    "faceless",
+    "witnesses",
+    "twinMask",
+    "marionette"
+]);
+const ACT_TARGETS = Object.freeze([500, 570, 640]);
+const HAND_BASE = Object.freeze({
+    HighCard: 5,
+    Pair: 15,
+    TwoPair: 30,
+    ThreeOfAKind: 45,
+    Straight: 70,
+    Flush: 80,
+    FullHouse: 100,
+    FourOfAKind: 140,
+    StraightFlush: 200
+});
+const HAND_PRIORITY = Object.freeze({
+    HighCard: 1,
+    Pair: 2,
+    TwoPair: 3,
+    ThreeOfAKind: 4,
+    Straight: 5,
+    Flush: 6,
+    FullHouse: 7,
+    FourOfAKind: 8,
+    StraightFlush: 9
+});
+const ROLE_DEFINITIONS = Object.freeze({
+    lastEntrant: Object.freeze({
+        id: "lastEntrant",
+        name: "The Last Entrant",
+        description: "Stores half the first two scenes and releases the stored applause twice at the finale.",
+        image: "./assets/role-last-entrant.webp"
+    }),
+    faceless: Object.freeze({
+        id: "faceless",
+        name: "The Faceless Understudy",
+        description: "Absorbs one repeated hand, then rests until a genuinely different hand is played.",
+        image: "./assets/role-faceless.webp"
+    }),
+    witnesses: Object.freeze({
+        id: "witnesses",
+        name: "The Veiled Witnesses",
+        description: "Records new hand types and restores a rehearsal after every third discovery.",
+        image: "./assets/role-witnesses.webp"
+    }),
+    twinMask: Object.freeze({
+        id: "twinMask",
+        name: "The Twin Mask",
+        description: "Rehearsals flip the mask; matching-colour cards may share a virtual suit.",
+        image: "./assets/role-twin-mask.webp"
+    }),
+    marionette: Object.freeze({
+        id: "marionette",
+        name: "The Marionette of Retakes",
+        description: "Once per act, rewinds a performed scene but bans its final hand type.",
+        image: "./assets/role-marionette.webp"
+    }),
+    curtainDirector: Object.freeze({
+        id: "curtainDirector",
+        name: "The Curtain Director",
+        description: "Watches the role immediately to the left; two cues restore a rehearsal.",
+        image: "./assets/role-director.webp"
+    })
+});
+const ERROR_MESSAGES = Object.freeze({
+    WRONG_PHASE: "That action is not available in the current phase.",
+    NO_CARDS_SELECTED: "Select at least one card first.",
+    TOO_MANY_CARDS: "A scene may contain at most five cards.",
+    HAND_TYPE_FORBIDDEN: "That hand type was banned by the retake.",
+    NO_REHEARSALS_LEFT: "No rehearsals remain in this act.",
+    INVALID_CHOICE: "Choose one of the offered roles.",
+    ROLE_ALREADY_RECRUITED: "That role has already joined the cast.",
+    CAST_FULL: "The stage already has three roles.",
+    CARD_NOT_IN_HAND: "A selected card is not in the current hand.",
+    DUPLICATE_CARD_SELECTION: "A card cannot be selected twice.",
+    ROLE_NOT_IN_CAST: "That role is not in the current cast.",
+    INVALID_DIRECTION: "Roles can move only left or right.",
+    MOVE_OUT_OF_BOUNDS: "That role is already at the edge of the stage."
+});
+
+const addUnique = (items, item) => (
+    items.includes(item)
+    ? items
+    : [...items, item]
+);
+
+const copyRoleState = (roleState) => ({
+    lastEntrant: {...roleState.lastEntrant},
+    faceless: {...roleState.faceless},
+    twinMask: {...roleState.twinMask},
+    curtainDirector: {...roleState.curtainDirector},
+    marionette: {...roleState.marionette}
+});
+
+const initialRoleState = () => ({
+    lastEntrant: {delayedApplause: 0},
+    faceless: {ready: true},
+    twinMask: {face: "comedy"},
+    curtainDirector: {cueTokens: 0},
+    marionette: {rewindUsed: false}
+});
+
+const zeroResourceChanges = (game) => ({
+    rehearsals: {
+        before: game.rehearsals,
+        attemptedDelta: 0,
+        appliedDelta: 0,
+        after: game.rehearsals,
+        lostToCapacity: 0
+    },
+    delayedApplause: {
+        before: game.roleState.lastEntrant.delayedApplause,
+        after: game.roleState.lastEntrant.delayedApplause
+    },
+    directorCueTokens: {
+        before: game.roleState.curtainDirector.cueTokens,
+        after: game.roleState.curtainDirector.cueTokens
+    },
+    witnessedHandTypesAdded: []
+});
+
+const gameError = (code, message = ERROR_MESSAGES[code]) => ({code, message});
+
+const withError = (game, code, message = ERROR_MESSAGES[code]) => ({
+    ...game,
+    lastError: gameError(code, message)
+});
+
+const hashString = function (string) {
+    let hash = 2166136261 >>> 0;
+    let index = 0;
+    while (index &lt; string.length) {
+        hash ^= string.charCodeAt(index);
+        hash = Math.imul(hash, 16777619) >>> 0;
+        index += 1;
+    }
+    return hash >>> 0;
+};
+
+const seedToState = (seed) => (
+    typeof seed === "string"
+    ? hashString(seed)
+    : seed >>> 0
+);
+
+const nextRandom = function (rngState) {
+    const next = (
+        Math.imul(1664525, rngState >>> 0) + 1013904223
+    ) >>> 0;
+    return {rngState: next, value: next / 4294967296};
+};
+
+const randomInt = function (rngState, minimum, maximumExclusive) {
+    if (
+        !Number.isInteger(minimum) ||
+        !Number.isInteger(maximumExclusive) ||
+        maximumExclusive &lt;= minimum
+    ) {
+        throw new RangeError("Invalid random integer interval.");
+    }
+    const result = nextRandom(rngState);
+    return {
+        rngState: result.rngState,
+        value: minimum + Math.floor(
+            result.value * (maximumExclusive - minimum)
+        )
+    };
+};
+
+/**
+ * Return a deterministically shuffled copy of a list and the next RNG state.
+ * @memberof LastCurtain
+ * @template T
+ * @param {number} rngState Current unsigned 32-bit random state.
+ * @param {T[]} items Items to shuffle.
+ * @returns {{rngState:number, shuffled:T[]}} Shuffled copy and next state.
+ */
+export function shuffleWithSeed(rngState, items) {
+    const shuffled = [...items];
+    let state = rngState;
+    let index = shuffled.length - 1;
+    while (index >= 1) {
+        const result = randomInt(state, 0, index + 1);
+        const otherIndex = result.value;
+        const temporary = shuffled[index];
+        state = result.rngState;
+        shuffled[index] = shuffled[otherIndex];
+        shuffled[otherIndex] = temporary;
+        index -= 1;
+    }
+    return {rngState: state, shuffled};
+}
+
+/**
+ * Create the standard ordered 52-card theatre deck.
+ * @memberof LastCurtain
+ * @returns {Card[]} New ordered deck.
+ */
+export function createDeck() {
+    return R.chain(function (suit) {
+        return R.map(function (rank) {
+            return {
+                id: `${suit}-${rank}`,
+                suit,
+                rank,
+                color: (
+                    suit === "H" || suit === "D"
+                    ? "red"
+                    : "black"
+                ),
+                value: (
+                    rank === 1
+                    ? 11
+                    : rank >= 11
+                    ? 10
+                    : rank
+                )
+            };
+        }, RANKS);
+    }, SUITS);
+}
+
+const rankStrength = (rank) => (rank === 1 ? 14 : rank);
+const cardIdsForRanks = (cards, ranks) => cards.filter(
+    (card) => ranks.includes(card.rank)
+).map((card) => card.id);
+
+/**
+ * Recognise the highest natural poker hand in one to five selected cards.
+ * @memberof LastCurtain
+ * @param {Card[]} cards Cards forming a proposed scene.
+ * @returns {Evaluation} Natural hand evaluation.
+ */
+export function classifyNaturalHand(cards) {
+    if (!Array.isArray(cards) || cards.length &lt; 1 || cards.length > 5) {
+        throw new RangeError("A hand must contain one to five cards.");
+    }
+    const rankGroups = R.countBy((card) => String(card.rank), cards);
+    const groupedRanks = Object.keys(rankGroups).map(Number).sort(
+        (left, right) => (
+            rankGroups[String(right)] - rankGroups[String(left)] ||
+            rankStrength(right) - rankStrength(left)
+        )
+    );
+    const counts = groupedRanks.map((rank) => rankGroups[String(rank)]);
+    const uniqueRanks = cards.reduce(
+        (ranks, card) => addUnique(ranks, card.rank),
+        []
+    );
+    const highRanks = uniqueRanks.map(rankStrength).sort((a, b) => a - b);
+    const aceLow = (
+        uniqueRanks.length === 5 &amp;&amp;
+        [1, 2, 3, 4, 5].every((rank) => uniqueRanks.includes(rank))
+    );
+    const consecutive = (
+        highRanks.length === 5 &amp;&amp;
+        highRanks.every((rank, index) => (
+            index === 0 || rank === highRanks[index - 1] + 1
+        ))
+    );
+    const straight = cards.length === 5 &amp;&amp; (aceLow || consecutive);
+    const flush = cards.length === 5 &amp;&amp; cards.every(
+        (card) => card.suit === cards[0].suit
+    );
+    let type = "HighCard";
+    let contributingRanks = [];
+    if (straight &amp;&amp; flush) {
+        type = "StraightFlush";
+        contributingRanks = uniqueRanks;
+    } else if (counts[0] === 4) {
+        type = "FourOfAKind";
+        contributingRanks = [groupedRanks[0]];
+    } else if (
+        cards.length === 5 &amp;&amp;
+        counts[0] === 3 &amp;&amp;
+        counts[1] === 2
+    ) {
+        type = "FullHouse";
+        contributingRanks = groupedRanks.slice(0, 2);
+    } else if (flush) {
+        type = "Flush";
+        contributingRanks = uniqueRanks;
+    } else if (straight) {
+        type = "Straight";
+        contributingRanks = uniqueRanks;
+    } else if (counts[0] === 3) {
+        type = "ThreeOfAKind";
+        contributingRanks = [groupedRanks[0]];
+    } else if (counts[0] === 2 &amp;&amp; counts[1] === 2) {
+        type = "TwoPair";
+        contributingRanks = groupedRanks.slice(0, 2);
+    } else if (counts[0] === 2) {
+        type = "Pair";
+        contributingRanks = [groupedRanks[0]];
+    } else {
+        const highest = cards.reduce(function (best, card) {
+            return rankStrength(card.rank) > rankStrength(best.rank)
+                ? card
+                : best;
+        }, cards[0]);
+        contributingRanks = [highest.rank];
+    }
+    const contributingCardIds = cardIdsForRanks(cards, contributingRanks);
+    return {
+        type,
+        contributingCardIds,
+        kickerCardIds: cards.filter(
+            (card) => !contributingCardIds.includes(card.id)
+        ).map((card) => card.id),
+        priority: HAND_PRIORITY[type],
+        modifiedByRoleId: null,
+        modificationLabel: null
+    };
+}
+
+const invalidResolution = function (game, code, message = ERROR_MESSAGES[code]) {
+    return {
+        valid: false,
+        errorCode: code,
+        errorMessage: message,
+        naturalEvaluation: null,
+        finalEvaluation: null,
+        scoreItems: [],
+        totalScore: 0,
+        varietyBefore: game.varietyLevel,
+        varietyAfter: game.varietyLevel,
+        repeated: false,
+        triggeredRoleIds: [],
+        effectLog: [],
+        resourceChanges: zeroResourceChanges(game),
+        timelineEntry: null
+    };
+};
+
+const duplicateItems = (items) => items.some(
+    (item, index) => items.indexOf(item) !== index
+);
+
+const selectionError = function (game) {
+    if (game.phase !== "playing") {
+        return "WRONG_PHASE";
+    }
+    if (game.selectedCardIds.length === 0) {
+        return "NO_CARDS_SELECTED";
+    }
+    if (game.selectedCardIds.length > 5) {
+        return "TOO_MANY_CARDS";
+    }
+    if (duplicateItems(game.selectedCardIds)) {
+        return "DUPLICATE_CARD_SELECTION";
+    }
+    if (game.selectedCardIds.some(
+        (id) => !game.hand.some((card) => card.id === id)
+    )) {
+        return "CARD_NOT_IN_HAND";
+    }
+    return null;
+};
+
+const selectedCards = (game) => game.selectedCardIds.map(
+    (id) => game.hand.find((card) => card.id === id)
+);
+
+const addTrigger = (ids, roleId) => addUnique(ids, roleId);
+
+const applyTwinMask = function (game, cards, natural, triggeredRoleIds, effectLog) {
+    if (!game.castSlots.includes("twinMask") || cards.length !== 5) {
+        return {evaluation: natural, triggeredRoleIds, effectLog};
+    }
+    const face = game.roleState.twinMask.face;
+    const requiredColor = face === "comedy" ? "red" : "black";
+    if (!cards.every((card) => card.color === requiredColor)) {
+        return {evaluation: natural, triggeredRoleIds, effectLog};
+    }
+    const virtualCards = cards.map((card) => ({
+        ...card,
+        suit: requiredColor
+    }));
+    const upgraded = classifyNaturalHand(virtualCards);
+    if (upgraded.priority &lt;= natural.priority) {
+        return {evaluation: natural, triggeredRoleIds, effectLog};
+    }
+    const label = `via ${face === "comedy" ? "Comedy" : "Tragedy"} Mask`;
+    return {
+        evaluation: {
+            ...upgraded,
+            modifiedByRoleId: "twinMask",
+            modificationLabel: label
+        },
+        triggeredRoleIds: addTrigger(triggeredRoleIds, "twinMask"),
+        effectLog: [...effectLog, {
+            roleId: "twinMask",
+            message: `The Twin Mask elevated the scene to ${upgraded.type}.`
+        }]
+    };
+};
+
+const attemptRehearsalRestore = function (state) {
+    const attemptedDelta = state.change.attemptedDelta + 1;
+    if (state.rehearsals &lt; 3) {
+        return {
+            rehearsals: state.rehearsals + 1,
+            change: {
+                ...state.change,
+                attemptedDelta,
+                appliedDelta: state.change.appliedDelta + 1,
+                after: state.rehearsals + 1
+            },
+            restored: true
+        };
+    }
+    return {
+        rehearsals: state.rehearsals,
+        change: {
+            ...state.change,
+            attemptedDelta,
+            lostToCapacity: state.change.lostToCapacity + 1,
+            after: state.rehearsals
+        },
+        restored: false
+    };
+};
+
+/**
+ * Calculate a selected scene without changing cards, state, or random state.
+ * @param {GameState} game Current game.
+ * @returns {SceneCalculation} Resolution and optional commit.
+ */
+const resolveScene = function (game) {
+    const errorCode = selectionError(game);
+    if (errorCode) {
+        return {resolution: invalidResolution(game, errorCode), commit: null};
+    }
+    const cards = selectedCards(game);
+    const naturalEvaluation = classifyNaturalHand(cards);
+    let triggeredRoleIds = [];
+    let effectLog = [];
+    const twinResult = applyTwinMask(
+        game,
+        cards,
+        naturalEvaluation,
+        triggeredRoleIds,
+        effectLog
+    );
+    const finalEvaluation = twinResult.evaluation;
+    triggeredRoleIds = twinResult.triggeredRoleIds;
+    effectLog = twinResult.effectLog;
+    if (game.bannedHandTypes.includes(finalEvaluation.type)) {
+        return {
+            resolution: invalidResolution(
+                game,
+                "HAND_TYPE_FORBIDDEN",
+                `${finalEvaluation.type} was banned by the retake.`
+            ),
+            commit: null
+        };
+    }
+
+    const roleState = copyRoleState(game.roleState);
+    const sameAsPrevious = (
+        game.sceneNumber > 1 &amp;&amp;
+        finalEvaluation.type === game.previousHandType
+    );
+    const facelessAbsorbed = (
+        game.castSlots.includes("faceless") &amp;&amp;
+        roleState.faceless.ready &amp;&amp;
+        sameAsPrevious
+    );
+    if (facelessAbsorbed) {
+        roleState.faceless.ready = false;
+        triggeredRoleIds = addTrigger(triggeredRoleIds, "faceless");
+        effectLog.push({
+            roleId: "faceless",
+            message: "The Faceless Understudy absorbed the repeated hand."
+        });
+    } else if (
+        game.castSlots.includes("faceless") &amp;&amp;
+        !roleState.faceless.ready &amp;&amp;
+        finalEvaluation.type !== game.previousHandType
+    ) {
+        roleState.faceless.ready = true;
+    }
+    const repeated = sameAsPrevious &amp;&amp; !facelessAbsorbed;
+    const varietyBefore = game.varietyLevel;
+    const varietyAfter = (
+        game.sceneNumber === 1
+        ? 0
+        : repeated
+        ? 0
+        : Math.min(3, varietyBefore + 1)
+    );
+    const baseScore = repeated ? 0 : HAND_BASE[finalEvaluation.type];
+    const cardValue = cards.reduce((sum, card) => sum + card.value, 0);
+    const varietyScore = 15 * varietyAfter;
+    const preRoleScore = baseScore + cardValue + varietyScore;
+    const scoreItems = [];
+    if (repeated) {
+        scoreItems.push({id: "repeat", label: "REPEATED", amount: 0});
+    }
+    scoreItems.push({id: "base", label: "Base Scene", amount: baseScore});
+    scoreItems.push({id: "cards", label: "Card Values", amount: cardValue});
+    scoreItems.push({
+        id: "variety",
+        label: `Variety ${varietyAfter}`,
+        amount: varietyScore
+    });
+
+    if (game.castSlots.includes("lastEntrant")) {
+        if (game.sceneNumber === 1 || game.sceneNumber === 2) {
+            const immediate = Math.floor(preRoleScore / 2);
+            const stored = preRoleScore - immediate;
+            roleState.lastEntrant.delayedApplause += stored;
+            scoreItems.push({
+                id: "stored",
+                label: "Stored for Final Entrance",
+                amount: -stored
+            });
+            triggeredRoleIds = addTrigger(triggeredRoleIds, "lastEntrant");
+            effectLog.push({
+                roleId: "lastEntrant",
+                message: `Stored ${stored} delayed applause.`
+            });
+        } else if (game.sceneNumber === 5) {
+            const finale = roleState.lastEntrant.delayedApplause * 2;
+            scoreItems.push({
+                id: "finale",
+                label: "Delayed Applause x2",
+                amount: finale
+            });
+            triggeredRoleIds = addTrigger(triggeredRoleIds, "lastEntrant");
+            effectLog.push({
+                roleId: "lastEntrant",
+                message: `Released ${finale} delayed applause.`
+            });
+        }
+    }
+
+    let rehearsals = game.rehearsals;
+    let witnessedHandTypes = [...game.witnessedHandTypes];
+    let rehearsalChange = zeroResourceChanges(game).rehearsals;
+    const witnessedAdded = [];
+    game.castSlots.forEach(function (roleId) {
+        if (
+            roleId === "witnesses" &amp;&amp;
+            !witnessedHandTypes.includes(finalEvaluation.type)
+        ) {
+            witnessedHandTypes = addUnique(
+                witnessedHandTypes,
+                finalEvaluation.type
+            );
+            witnessedAdded.push(finalEvaluation.type);
+            triggeredRoleIds = addTrigger(triggeredRoleIds, "witnesses");
+            effectLog.push({
+                roleId: "witnesses",
+                message: `Witnessed ${finalEvaluation.type} for the first time.`
+            });
+            if (witnessedHandTypes.length % 3 === 0) {
+                const restored = attemptRehearsalRestore({
+                    rehearsals,
+                    change: rehearsalChange
+                });
+                rehearsals = restored.rehearsals;
+                rehearsalChange = restored.change;
+                effectLog.push({
+                    roleId: "witnesses",
+                    message: restored.restored
+                        ? "Restored one rehearsal."
+                        : "Rehearsal capacity full — restoration lost."
+                });
+            }
+        }
+        if (roleId === "curtainDirector") {
+            const index = game.castSlots.indexOf("curtainDirector");
+            const leftRoleId = index > 0 ? game.castSlots[index - 1] : null;
+            if (leftRoleId &amp;&amp; triggeredRoleIds.includes(leftRoleId)) {
+                roleState.curtainDirector.cueTokens += 1;
+                triggeredRoleIds = addTrigger(
+                    triggeredRoleIds,
+                    "curtainDirector"
+                );
+                effectLog.push({
+                    roleId: "curtainDirector",
+                    message: `Recorded a cue from ${ROLE_DEFINITIONS[leftRoleId].name}.`
+                });
+                if (roleState.curtainDirector.cueTokens >= 2) {
+                    const restored = attemptRehearsalRestore({
+                        rehearsals,
+                        change: rehearsalChange
+                    });
+                    rehearsals = restored.rehearsals;
+                    rehearsalChange = restored.change;
+                    roleState.curtainDirector.cueTokens = 0;
+                    effectLog.push({
+                        roleId: "curtainDirector",
+                        message: restored.restored
+                            ? "Two cues restored one rehearsal."
+                            : "Two cues resolved; restoration was lost at capacity."
+                    });
+                }
+            }
+        }
+    });
+
+    const totalScore = scoreItems.reduce((sum, item) => sum + item.amount, 0);
+    const resourceChanges = {
+        rehearsals: rehearsalChange,
+        delayedApplause: {
+            before: game.roleState.lastEntrant.delayedApplause,
+            after: roleState.lastEntrant.delayedApplause
+        },
+        directorCueTokens: {
+            before: game.roleState.curtainDirector.cueTokens,
+            after: roleState.curtainDirector.cueTokens
+        },
+        witnessedHandTypesAdded: witnessedAdded
+    };
+    const timelineEntry = {
+        scene: game.sceneNumber,
+        natural: naturalEvaluation.type,
+        final: finalEvaluation.type,
+        modifier: finalEvaluation.modificationLabel,
+        scoreItems: scoreItems.map((item) => ({...item})),
+        totalScore,
+        triggeredRoleIds: [...triggeredRoleIds],
+        effectLog: effectLog.map((entry) => ({...entry}))
+    };
+    const resolution = {
+        valid: true,
+        errorCode: null,
+        errorMessage: null,
+        naturalEvaluation,
+        finalEvaluation,
+        scoreItems,
+        totalScore,
+        varietyBefore,
+        varietyAfter,
+        repeated,
+        triggeredRoleIds,
+        effectLog,
+        resourceChanges,
+        timelineEntry
+    };
+    return {
+        resolution,
+        commit: {
+            actScoreDelta: totalScore,
+            runScoreDelta: totalScore,
+            previousHandType: finalEvaluation.type,
+            varietyLevel: varietyAfter,
+            rehearsals,
+            witnessedHandTypes,
+            roleState,
+            timelineEntry
+        }
+    };
+};
+
+const refillAfterRemoval = function (state, removedCards) {
+    let drawPile = [...state.drawPile];
+    let discardPile = [...state.discardPile];
+    let rngState = state.rngState;
+    const drawn = [];
+    while (drawn.length &lt; removedCards.length) {
+        if (drawPile.length === 0) {
+            if (discardPile.length === 0) {
+                throw new Error("Deck invariant violated: no cards available.");
+            }
+            const result = shuffleWithSeed(rngState, discardPile);
+            rngState = result.rngState;
+            drawPile = result.shuffled;
+            discardPile = [];
+        }
+        if (drawPile.length === 0) {
+            throw new Error(
+                "Deck invariant violated: shuffle returned no cards."
+            );
+        }
+        drawn.push(drawPile[0]);
+        drawPile = drawPile.slice(1);
+    }
+    return {
+        drawn,
+        drawPile,
+        discardPile: [...discardPile, ...removedCards],
+        rngState
+    };
+};
+
+const createRewindSnapshot = (game) => ({
+    rngState: game.rngState,
+    actScore: game.actScore,
+    runScore: game.runScore,
+    sceneNumber: game.sceneNumber,
+    rehearsals: game.rehearsals,
+    varietyLevel: game.varietyLevel,
+    previousHandType: game.previousHandType,
+    timeline: game.timeline,
+    bannedHandTypes: game.bannedHandTypes,
+    lastSceneResult: game.lastSceneResult,
+    witnessedHandTypes: game.witnessedHandTypes,
+    drawPile: game.drawPile,
+    hand: game.hand,
+    discardPile: game.discardPile,
+    selectedCardIds: game.selectedCardIds,
+    roleState: game.roleState,
+    lastError: game.lastError
+});
+
+const advance = function (game) {
+    if (game.sceneNumber &lt; 5) {
+        return {
+            ...game,
+            phase: "playing",
+            sceneNumber: game.sceneNumber + 1,
+            pendingScene: null,
+            lastError: null
+        };
+    }
+    const target = ACT_TARGETS[game.currentAct - 1];
+    if (game.actScore &lt; target) {
+        return {...game, phase: "lost", pendingScene: null, lastError: null};
+    }
+    if (game.currentAct === 3) {
+        return {...game, phase: "won", pendingScene: null, lastError: null};
+    }
+    return {
+        ...game,
+        phase: "act-complete",
+        pendingScene: null,
+        lastError: null
+    };
+};
+
+const applySceneCommit = function (game, resolution, commit, snapshotBefore) {
+    const removedCards = selectedCards(game);
+    const removedIds = removedCards.map((card) => card.id);
+    const handAfterRemoval = game.hand.filter(
+        (card) => !removedIds.includes(card.id)
+    );
+    const refill = refillAfterRemoval(game, removedCards);
+    const candidate = {
+        ...game,
+        rngState: refill.rngState,
+        actScore: game.actScore + commit.actScoreDelta,
+        runScore: game.runScore + commit.runScoreDelta,
+        rehearsals: commit.rehearsals,
+        varietyLevel: commit.varietyLevel,
+        previousHandType: commit.previousHandType,
+        timeline: [...game.timeline, commit.timelineEntry],
+        witnessedHandTypes: commit.witnessedHandTypes,
+        hand: [...handAfterRemoval, ...refill.drawn],
+        drawPile: refill.drawPile,
+        discardPile: refill.discardPile,
+        selectedCardIds: [],
+        roleState: commit.roleState,
+        lastSceneResult: resolution,
+        lastError: null
+    };
+    const shouldPend = (
+        game.castSlots.includes("marionette") &amp;&amp;
+        !game.roleState.marionette.rewindUsed
+    );
+    if (shouldPend) {
+        return {
+            ...candidate,
+            phase: "scene-pending",
+            pendingScene: {snapshotBefore, resolution}
+        };
+    }
+    return advance(candidate);
+};
+
+/**
+ * Create a reproducible title-state game without dealing cards.
+ * @memberof LastCurtain
+ * @param {number|string} seed Reproducible seed.
+ * @returns {GameState} New title-state game.
+ */
+export function createGame(seed) {
+    if (typeof seed !== "number" &amp;&amp; typeof seed !== "string") {
+        throw new TypeError("A game seed must be a number or string.");
+    }
+    const roles = shuffleWithSeed(seedToState(seed), INITIAL_ROLE_ORDER);
+    return {
+        initialSeed: seed,
+        rngState: roles.rngState,
+        phase: "title",
+        auditionType: null,
+        offeredRoleIds: [],
+        auditionQueue: roles.shuffled,
+        castSlots: [],
+        currentAct: 1,
+        actScore: 0,
+        runScore: 0,
+        sceneNumber: 1,
+        rehearsals: 2,
+        varietyLevel: 0,
+        previousHandType: null,
+        timeline: [],
+        bannedHandTypes: [],
+        pendingScene: null,
+        lastSceneResult: null,
+        witnessedHandTypes: [],
+        drawPile: [],
+        hand: [],
+        discardPile: [],
+        selectedCardIds: [],
+        roleState: initialRoleState(),
+        lastError: null
+    };
+}
+
+/**
+ * Open the first audition without dealing the act deck.
+ * @memberof LastCurtain
+ * @param {GameState} game Title-state game.
+ * @returns {GameState} Opening audition or error state.
+ */
+export function startGame(game) {
+    if (game.phase !== "title") {
+        return withError(game, "WRONG_PHASE");
+    }
+    return {
+        ...game,
+        phase: "audition",
+        auditionType: "opening",
+        offeredRoleIds: game.auditionQueue.slice(0, 3),
+        lastError: null
+    };
+}
+
+const resolveAuditionQueue = function (queue, chosenId) {
+    const offered = queue.slice(0, 3);
+    const untouched = queue.slice(3);
+    return [
+        ...untouched,
+        ...offered.filter((id) => id !== chosenId)
+    ];
+};
+
+const initialiseAct = function (game, rngState, auditionQueue, castSlots) {
+    const shuffledDeck = shuffleWithSeed(rngState, createDeck());
+    return {
+        ...game,
+        rngState: shuffledDeck.rngState,
+        phase: "playing",
+        auditionType: null,
+        offeredRoleIds: [],
+        auditionQueue,
+        castSlots,
+        actScore: 0,
+        sceneNumber: 1,
+        rehearsals: 2,
+        varietyLevel: 0,
+        previousHandType: null,
+        timeline: [],
+        bannedHandTypes: [],
+        pendingScene: null,
+        lastSceneResult: null,
+        drawPile: shuffledDeck.shuffled.slice(8),
+        hand: shuffledDeck.shuffled.slice(0, 8),
+        discardPile: [],
+        selectedCardIds: [],
+        roleState: initialRoleState(),
+        lastError: null
+    };
+};
+
+/**
+ * Recruit an offered role and begin the corresponding act.
+ * @memberof LastCurtain
+ * @param {GameState} game Audition-state game.
+ * @param {string} roleId Offered role identifier.
+ * @returns {GameState} Playing game or player-facing error state.
+ */
+export function chooseRole(game, roleId) {
+    if (game.phase !== "audition") {
+        return withError(game, "WRONG_PHASE");
+    }
+    if (game.castSlots.includes(roleId)) {
+        return withError(game, "ROLE_ALREADY_RECRUITED");
+    }
+    if (game.castSlots.length >= 3) {
+        return withError(game, "CAST_FULL");
+    }
+    if (!game.offeredRoleIds.includes(roleId)) {
+        return withError(game, "INVALID_CHOICE");
+    }
+    let queue = resolveAuditionQueue(game.auditionQueue, roleId);
+    let rngState = game.rngState;
+    if (game.auditionType === "opening") {
+        const insertion = randomInt(rngState, 0, queue.length + 1);
+        rngState = insertion.rngState;
+        queue = [
+            ...queue.slice(0, insertion.value),
+            "curtainDirector",
+            ...queue.slice(insertion.value)
+        ];
+    }
+    const currentAct = (
+        game.auditionType === "opening"
+        ? 1
+        : game.currentAct + 1
+    );
+    return initialiseAct(
+        {...game, currentAct},
+        rngState,
+        queue,
+        [...game.castSlots, roleId]
+    );
+}
+
+/** Return the offered role definitions in audition order. */
+export function getAuditionCandidates(game) {
+    if (game.phase !== "audition") {
+        return [];
+    }
+    return game.offeredRoleIds.map((id) => ROLE_DEFINITIONS[id]);
+}
+
+const roleStatus = function (game, roleId, slot) {
+    if (roleId === "lastEntrant") {
+        return `DELAYED: ${game.roleState.lastEntrant.delayedApplause}`;
+    }
+    if (roleId === "faceless") {
+        return game.roleState.faceless.ready
+            ? "READY"
+            : "EXHAUSTED — CHANGE THE HAND TO RESTORE";
+    }
+    if (roleId === "witnesses") {
+        return `WITNESSED: ${game.witnessedHandTypes.length} / 9`;
+    }
+    if (roleId === "twinMask") {
+        return game.roleState.twinMask.face === "comedy"
+            ? "COMEDY — RED"
+            : "TRAGEDY — BLACK";
+    }
+    if (roleId === "curtainDirector") {
+        return slot === 0
+            ? "DORMANT — NO ROLE TO THE LEFT"
+            : `CUES: ${game.roleState.curtainDirector.cueTokens} / 2`;
+    }
+    return game.roleState.marionette.rewindUsed
+        ? "RETAKE USED"
+        : "RETAKE AVAILABLE";
+};
+
+/** Return display-ready views of the current cast without exposing UI rules. */
+export function getCastRoleViews(game) {
+    return game.castSlots.map(function (id, slot) {
+        return {
+            ...ROLE_DEFINITIONS[id],
+            slot,
+            status: roleStatus(game, id, slot),
+            dormant: id === "curtainDirector" &amp;&amp; slot === 0
+        };
+    });
+}
+
+/** Return cards the player may currently toggle. */
+export function getSelectableCardIds(game) {
+    if (game.phase !== "playing") {
+        return [];
+    }
+    return game.selectedCardIds.length >= 5
+        ? [...game.selectedCardIds]
+        : game.hand.map((card) => card.id);
+}
+
+/** Return legal stage directions for one recruited role. */
+export function getMovableDirections(game, roleId) {
+    if (game.phase !== "playing") {
+        return [];
+    }
+    const index = game.castSlots.indexOf(roleId);
+    if (index &lt; 0) {
+        return [];
+    }
+    return [
+        ...(index > 0 ? ["left"] : []),
+        ...(index &lt; game.castSlots.length - 1 ? ["right"] : [])
+    ];
+}
+
+/** Swap a recruited role with an adjacent stage slot. */
+export function moveRole(game, roleId, direction) {
+    if (game.phase !== "playing") {
+        return withError(game, "WRONG_PHASE");
+    }
+    const index = game.castSlots.indexOf(roleId);
+    if (index &lt; 0) {
+        return withError(game, "ROLE_NOT_IN_CAST");
+    }
+    if (direction !== "left" &amp;&amp; direction !== "right") {
+        return withError(game, "INVALID_DIRECTION");
+    }
+    const destination = index + (direction === "left" ? -1 : 1);
+    if (destination &lt; 0 || destination >= game.castSlots.length) {
+        return withError(game, "MOVE_OUT_OF_BOUNDS");
+    }
+    const castSlots = [...game.castSlots];
+    castSlots[index] = castSlots[destination];
+    castSlots[destination] = roleId;
+    return {...game, castSlots, lastError: null};
+}
+
+/** Toggle one card in the proposed scene, up to five selected cards. */
+export function toggleCardSelection(game, cardId) {
+    if (game.phase !== "playing") {
+        return withError(game, "WRONG_PHASE");
+    }
+    if (!game.hand.some((card) => card.id === cardId)) {
+        return withError(game, "CARD_NOT_IN_HAND");
+    }
+    if (game.selectedCardIds.includes(cardId)) {
+        return {
+            ...game,
+            selectedCardIds: game.selectedCardIds.filter((id) => id !== cardId),
+            lastError: null
+        };
+    }
+    if (game.selectedCardIds.length >= 5) {
+        return withError(game, "TOO_MANY_CARDS");
+    }
+    return {
+        ...game,
+        selectedCardIds: [...game.selectedCardIds, cardId],
+        lastError: null
+    };
+}
+
+/** Return a deterministic scene preview without committing it. */
+export function previewScene(game) {
+    return resolveScene(game).resolution;
+}
+
+/** Commit the selected cards as a scene, possibly opening a retake decision. */
+export function performScene(game) {
+    const result = resolveScene(game);
+    if (!result.resolution.valid || !result.commit) {
+        return withError(
+            game,
+            result.resolution.errorCode,
+            result.resolution.errorMessage
+        );
+    }
+    return applySceneCommit(
+        game,
+        result.resolution,
+        result.commit,
+        createRewindSnapshot(game)
+    );
+}
+
+/** Keep a pending performed scene and advance the lifecycle. */
+export function confirmScene(game) {
+    if (game.phase !== "scene-pending") {
+        return withError(game, "WRONG_PHASE");
+    }
+    return advance({...game, pendingScene: null, lastError: null});
+}
+
+/** Restore the state before a pending scene and ban its final hand. */
+export function rewindScene(game) {
+    if (game.phase !== "scene-pending") {
+        return withError(game, "WRONG_PHASE");
+    }
+    if (!game.pendingScene) {
+        throw new Error("Pending-scene invariant violated.");
+    }
+    const snapshot = game.pendingScene.snapshotBefore;
+    const finalType = game.pendingScene.resolution.finalEvaluation.type;
+    return {
+        ...game,
+        ...snapshot,
+        phase: "playing",
+        pendingScene: null,
+        bannedHandTypes: addUnique(snapshot.bannedHandTypes, finalType),
+        roleState: {
+            ...copyRoleState(snapshot.roleState),
+            marionette: {rewindUsed: true}
+        },
+        lastError: null
+    };
+}
+
+/** Replace the selected cards without allowing them to be drawn immediately. */
+export function rehearse(game) {
+    if (game.phase !== "playing") {
+        return withError(game, "WRONG_PHASE");
+    }
+    if (game.rehearsals &lt;= 0) {
+        return withError(game, "NO_REHEARSALS_LEFT");
+    }
+    const errorCode = selectionError(game);
+    if (errorCode) {
+        return withError(game, errorCode);
+    }
+    const removedCards = selectedCards(game);
+    const removedIds = removedCards.map((card) => card.id);
+    const refill = refillAfterRemoval(game, removedCards);
+    const roleState = copyRoleState(game.roleState);
+    if (game.castSlots.includes("twinMask")) {
+        roleState.twinMask.face = (
+            roleState.twinMask.face === "comedy"
+            ? "tragedy"
+            : "comedy"
+        );
+    }
+    return {
+        ...game,
+        rngState: refill.rngState,
+        rehearsals: game.rehearsals - 1,
+        hand: [
+            ...game.hand.filter((card) => !removedIds.includes(card.id)),
+            ...refill.drawn
+        ],
+        drawPile: refill.drawPile,
+        discardPile: refill.discardPile,
+        selectedCardIds: [],
+        roleState,
+        lastError: null
+    };
+}
+
+/** Move from a completed act to its intermission audition. */
+export function continueAfterAct(game) {
+    if (game.phase !== "act-complete") {
+        return withError(game, "WRONG_PHASE");
+    }
+    return {
+        ...game,
+        phase: "audition",
+        auditionType: game.currentAct === 1 ? "post-1" : "post-2",
+        offeredRoleIds: game.auditionQueue.slice(0, 3),
+        lastError: null
+    };
+}
+
+/** Fully recreate a title-state game, preserving the original seed by default. */
+export function restartGame(game, seed = game.initialSeed) {
+    return createGame(seed);
+}
+
+/** Return the current lifecycle phase. */
+export function getPhase(game) {
+    return game.phase;
+}
+
+/** Return the applause target derived from the current act. */
+export function getActTarget(game) {
+    return ACT_TARGETS[game.currentAct - 1];
+}
+
+/** Return phase and state-aware action identifiers for the UI. */
+export function getAvailableActions(game) {
+    if (game.phase === "title") {
+        return ["start"];
+    }
+    if (game.phase === "audition") {
+        return (
+            game.offeredRoleIds.length > 0 &amp;&amp; game.castSlots.length &lt; 3
+            ? ["choose-role"]
+            : []
+        );
+    }
+    if (game.phase === "playing") {
+        const actions = game.hand.length > 0 ? ["toggle-card"] : [];
+        if (previewScene(game).valid) {
+            actions.push("perform");
+        }
+        if (
+            game.rehearsals > 0 &amp;&amp;
+            selectionError(game) === null
+        ) {
+            actions.push("rehearse");
+        }
+        if (game.castSlots.length > 1) {
+            actions.push("move-role");
+        }
+        return actions;
+    }
+    if (game.phase === "scene-pending") {
+        return ["confirm", "rewind"];
+    }
+    if (game.phase === "act-complete") {
+        return ["continue"];
+    }
+    return ["restart"];
+}
+
+/** Return whether the run has reached victory or defeat. */
+export function isGameOver(game) {
+    return game.phase === "won" || game.phase === "lost";
+}
+
+const LastCurtain = Object.freeze({
+    createDeck,
+    shuffleWithSeed,
+    createGame,
+    startGame,
+    getAuditionCandidates,
+    getCastRoleViews,
+    getSelectableCardIds,
+    getMovableDirections,
+    chooseRole,
+    moveRole,
+    toggleCardSelection,
+    classifyNaturalHand,
+    previewScene,
+    performScene,
+    confirmScene,
+    rewindScene,
+    rehearse,
+    continueAfterAct,
+    restartGame,
+    getPhase,
+    getActTarget,
+    getAvailableActions,
+    isGameOver
+});
+
+export default LastCurtain;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Tue Jun 23 2026 05:19:09 GMT+0100 (British Summer Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+    <link type="text/css" rel="stylesheet" href="custom.css">
+    
+</body>
+</html>

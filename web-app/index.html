@@ -1,9 +1,95 @@
-<!-- In HTML Comments are written like this -->
-<!-- They can all be removed for your apps -->
-<!doctype html> <!-- This first line tells browsers to expect modern standard html 5 -->
-<html lang="en-gb"> <!-- This is indicates the page is written in British English, useful for accessibility -->
-<meta charset="utf-8"> <!-- This indicates how the file is encoded. utf-8 is standard -->
-<title>Your Web-app Title</title> <!-- All pages need a title, this will be displayed in the browser's title bar -->
-<link rel="stylesheet" href="default.css"> <!-- Import style sheet – default.css -->
-<link rel="icon" href="./assets/favicon.png"> <!-- Import 'Favorites Icon' – favicon.png -->
-<script type="module" src="main.js"></script> <!-- Load the main script. Must be type="module". Have only one of these -->
+<!doctype html>
+<html lang="en-GB">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090b16">
+    <meta name="description" content="A deterministic turn-based poker theatre game.">
+    <title>The Last Curtain: Theatre of Echoes</title>
+    <link rel="stylesheet" href="default.css">
+    <script type="module" src="main.js"></script>
+</head>
+<body>
+    <a class="skip-link" href="#game">Skip to game</a>
+    <div class="ambient ambient-fog" aria-hidden="true"></div>
+    <div class="ambient ambient-light" aria-hidden="true"></div>
+
+    <header class="topbar">
+        <div class="brand-block">
+            <span class="eyebrow">A ritual card theatre</span>
+            <h1>The Last Curtain</h1>
+        </div>
+        <div id="run-summary" class="run-summary" aria-label="Current run"></div>
+    </header>
+
+    <main id="game" class="game-shell">
+        <aside class="side-panel log-panel" aria-labelledby="log-heading">
+            <div class="panel-heading">
+                <span class="panel-index">I</span>
+                <h2 id="log-heading">Event log</h2>
+            </div>
+            <ol id="event-log" class="event-log"></ol>
+            <details class="rules-card">
+                <summary>How to perform</summary>
+                <p>Select one to five cards. New hand types build Variety; repeating the previous hand loses its base applause.</p>
+                <p>Complete five scenes and reach the act target. Rehearsals redraw selected cards without consuming a scene.</p>
+                <dl class="shortcut-list">
+                    <div><dt>P</dt><dd>Perform</dd></div>
+                    <div><dt>R</dt><dd>Rehearse</dd></div>
+                    <div><dt>K</dt><dd>Keep scene</dd></div>
+                    <div><dt>Z</dt><dd>Rewind</dd></div>
+                </dl>
+            </details>
+        </aside>
+
+        <section class="centre-stage" aria-label="Theatre stage">
+            <section class="cast-section" aria-labelledby="cast-heading">
+                <div class="section-title">
+                    <span>Cast arrangement</span>
+                    <h2 id="cast-heading">The stage</h2>
+                </div>
+                <div id="cast-stage" class="cast-stage"></div>
+            </section>
+
+            <section class="timeline-section" aria-labelledby="timeline-heading">
+                <div class="section-title compact-title">
+                    <span>Five-scene ritual</span>
+                    <h2 id="timeline-heading">Act timeline</h2>
+                </div>
+                <ol id="timeline" class="timeline"></ol>
+            </section>
+
+            <section id="preview" class="preview-panel" aria-labelledby="preview-heading"></section>
+
+            <section class="hand-section" aria-labelledby="hand-heading">
+                <div class="hand-heading-row">
+                    <div>
+                        <span class="section-kicker">Front row</span>
+                        <h2 id="hand-heading">Your hand</h2>
+                    </div>
+                    <span id="selection-count" class="selection-count">0 / 5 selected</span>
+                </div>
+                <div id="hand" class="hand" role="group" aria-label="Playing cards"></div>
+            </section>
+
+            <div id="controls" class="controls" aria-label="Scene controls"></div>
+        </section>
+
+        <aside class="side-panel status-panel" aria-labelledby="status-heading">
+            <div class="panel-heading">
+                <span class="panel-index">II</span>
+                <h2 id="status-heading">Act status</h2>
+            </div>
+            <div id="act-status" class="act-status"></div>
+        </aside>
+
+        <section id="phase-overlay" class="phase-overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title" hidden>
+            <div id="overlay-content" class="overlay-card"></div>
+        </section>
+    </main>
+
+    <div id="flight-layer" aria-hidden="true"></div>
+    <div id="live-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="error-alert" class="visually-hidden" role="alert" aria-atomic="true"></div>
+</body>
+</html>
