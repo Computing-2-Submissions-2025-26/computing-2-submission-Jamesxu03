@@ -223,7 +223,7 @@ const INITIAL_ROLE_ORDER = Object.freeze([
     "twinMask",
     "marionette"
 ]);
-const ACT_TARGETS = Object.freeze([500, 570, 640]);
+const ACT_TARGETS = Object.freeze([400, 500, 600]);
 const HAND_BASE = Object.freeze({
     HighCard: 5,
     Pair: 15,
@@ -1015,7 +1015,7 @@ export function createGame(seed) {
         actScore: 0,
         runScore: 0,
         sceneNumber: 1,
-        rehearsals: 2,
+        rehearsals: 3,
         varietyLevel: 0,
         previousHandType: null,
         timeline: [],
@@ -1072,7 +1072,7 @@ const initialiseAct = function (game, rngState, auditionQueue, castSlots) {
         castSlots,
         actScore: 0,
         sceneNumber: 1,
-        rehearsals: 2,
+        rehearsals: 3,
         varietyLevel: 0,
         previousHandType: null,
         timeline: [],

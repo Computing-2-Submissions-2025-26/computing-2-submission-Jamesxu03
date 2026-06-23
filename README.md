@@ -29,7 +29,7 @@ npm run simulate
 
 ## Rules
 
-- Each act begins with eight cards, five performances, and two rehearsals.
+- Each act begins with eight cards, five performances, and three rehearsals.
 - Select one to five cards and perform the best available poker hand.
 - A different hand type raises Variety, up to Level 3; repetition resets Variety and removes base applause.
 - Rehearsal replaces selected cards without consuming a scene.
@@ -97,4 +97,4 @@ The seven WebP assets total well below the 2.5MB project budget, and the page fa
 
 ## Balance status
 
-The calibrated act targets are 500, 570, and 640 applause. `npm run simulate` evaluates deterministic baseline, first-offer, random-offer, and heuristic policies. In the final 2,000-seed calibration run, the heuristic policy passed Acts I/II/III at 90.1%, 74.3%, and 63.6% conditionally, with a 42.6% full-run win rate. These targets should be changed only alongside the score constants, simulator output, tests, and this README.
+The calibrated act targets are 400, 500, and 600 applause, with three rehearsals per act. `npm run simulate` evaluates deterministic baseline, first-offer, random-offer, and heuristic policies. In the latest 2,000-seed calibration run, the heuristic policy passed Acts I/II/III at 99.9%, 95.2%, and 76.5% conditionally, with a 72.8% full-run win rate (random-offer 57.4%, first-offer 57.8%, baseline 21.5%). These targets should be changed only alongside the score constants, simulator output, tests, and this README.
