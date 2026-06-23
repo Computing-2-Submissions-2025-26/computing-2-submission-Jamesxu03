@@ -84,10 +84,13 @@ The automated suite covers:
 - wrong-phase and player-facing API errors;
 - deep immutability and preview side-effect checks.
 
+Each test asserts behaviour through the public API rather than re-implementing it, and every test was confirmed to fail with a localising message against a deliberately broken implementation (for example, skipping the repetition reset or reversing the Director's observed neighbour), following the principle of never trusting a test that has not been seen to fail.
+
 ## Accessibility
 
 - Every playing card and action is a native button.
 - Selected cards use `aria-pressed`.
+- Scrollable cast and timeline regions are keyboard focusable, and the modal overlay marks the rest of the game `inert` so focus cannot reach the background.
 - Focus is deliberately transferred at auditions, retake decisions, act transitions, and results.
 - Keyboard shortcuts support performing, rehearsing, keeping, rewinding, and arranging roles.
 - Suit information is communicated by symbol, name, and colour.

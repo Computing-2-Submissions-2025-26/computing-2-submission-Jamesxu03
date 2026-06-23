@@ -281,6 +281,11 @@ const renderOverlay = function () {
     const visible = game.phase !== "playing";
     overlay.hidden = !visible;
     document.body.dataset.phase = game.phase;
+    [...document.querySelectorAll("#game > :not(#phase-overlay)")].forEach(
+        function (region) {
+            region.inert = visible;
+        }
+    );
     if (visible) {
         element("overlay-content").innerHTML = resultOverlayMarkup();
     }
